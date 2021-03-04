@@ -62,7 +62,7 @@ def Mapping_M(slice: pd.DataFrame, r: int = 256):
         x = math.floor(x_list[j] * r) if math.floor(x_list[j] * r) < r else r-1
         y = math.floor(y_list[j] * r) if math.floor(y_list[j] * r) < r else r-1
         I[x,y,0] = I[x,y,0] + 1 #Appending to the density
-        C[x,y].append(slice.iloc[j]['x'])
+        C[x,y].append(slice.iloc[j]['z'])
 
     for h in tqdm(range(r)):
         for t in range(r):
