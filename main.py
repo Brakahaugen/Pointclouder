@@ -2,7 +2,8 @@ from util import *
 import pandas as pd
 from glob import glob
 from random import random, shuffle, uniform, randint
-import itertools
+
+
 
 
 def get_n_random_trees(num_trees, tree_glob = "test_trees/*.las"):
@@ -96,28 +97,23 @@ def scatter_trees_on_grid(random_trees: list, width_height: list, allow_clusteri
         Returns a PyntCloud with all the trees scattered and merged into one
     """
     axes = ["x","y"]
-    labels = []
-    
+    label_id = 1
+
     if allow_clustering:
         for tree in random_trees:
-            label = []
             for axis, max in zip(axes, width_height):
                 tree.points[axis] = tree.points[axis].add(round(uniform(0,max-1), 3))
-                label.append(tree.points[axis].min())
-                label.append(tree.points[axis].max())
-            labels.append(label)
-    
+                tree.points["label_id"] = label_id
+            label_id += 1
+
     if not allow_clustering:
         for tree, offsets in zip(random_trees, create_random_space(*width_height, len(random_trees))):
-            label = []
             for axis, val in zip(axes, offsets):
                 tree.points[axis] = tree.points[axis].add(val)
-                label.append(tree.points[axis].min())
-                label.append(tree.points[axis].max())
-            labels.append(label)
-    
-    print("labels: LABELS ARE ON FORMAT: x_min, x_max, y_min, y_max\n",labels) 
-    
+                tree.points["label_id"] = label_id
+            label_id += 1
+
+
     # print("single tree", random_trees[0].points)
     merged_trees = random_trees[0]
     for tree in random_trees[1:]:
@@ -125,7 +121,7 @@ def scatter_trees_on_grid(random_trees: list, width_height: list, allow_clusteri
 
     print(merged_trees.points)
 
-    return labels, merged_trees
+    return merged_trees
 
 # my1 = PyntCloud.from_file("test_trees/1.las")
 # my2 = PyntCloud.from_file("test_trees/2.las")
@@ -134,19 +130,16 @@ def scatter_trees_on_grid(random_trees: list, width_height: list, allow_clusteri
 
 
 
-def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolution: int = 256, allow_clustering: bool = True, augmentation: dict = {}):
+def get_random_sample(num_trees = 8, width: int = 8, height: int = 8, resolution: int = 1024, allow_clustering: bool = True, augmentation: dict = {}):
     print("getting")
     random_trees = get_n_random_trees(num_trees)
     print("processing")
     random_trees = preprocess_trees(random_trees)
     print("scattering")
-    labels, scattered_trees_on_grid = scatter_trees_on_grid(random_trees, [width, height], allow_clustering=allow_clustering, augmentation=augmentation)
-    
+    scattered_trees_on_grid = scatter_trees_on_grid(random_trees, [width, height], allow_clustering=allow_clustering, augmentation=augmentation)
+
     print("normalizing")
     scattered_trees_on_grid.points = normalize(scattered_trees_on_grid.points)
-    
-    print("creating label image")
-    label_image = create_label_image(labels, width, height, resolution)
 
     print("Creating sequences")
     sequences = TDI(scattered_trees_on_grid.points, 3)
@@ -155,13 +148,15 @@ def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolutio
     for seq in sequences:
         images.append(Mapping_M(seq, r = resolution))
     
+    label_image = create_label_image(sequences[-1], r = resolution, fill_holes=math.floor(resolution/50))
 
-    print(images[0])
+    # print(images[0])
     print("concattenating images")
     concatted_image = np.append(np.append(images[0], images[1], axis=1), images[2], axis=1)
-    cv2.imshow("Window", concatted_image)
-    cv2.waitKey(0)
-    cv2.imshow("Windows", label_image)
+
+    cv2.imshow("windows", concatted_image)
+    cv2.imshow("windowsss", label_image)
+    
     cv2.waitKey(0)
     return concatted_image #A concatted image with the three images
 

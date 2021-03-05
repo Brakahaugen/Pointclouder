@@ -4,6 +4,8 @@ import math
 import numpy as np
 from tqdm import tqdm
 import cv2
+from scipy.ndimage.morphology import binary_dilation, binary_erosion
+
 
 
 
@@ -25,25 +27,27 @@ def TDI(points: pd.DataFrame, k = 3):
 
     return slices
 
-def create_label_image(labels: list, width: int, height: int, resolution: int):
-    """
-    Creating a image of the given labels, with given resolution and gridsize
-    """
-    if width != height:
-        assert(False), "Width is not equals height, we have not implemented this case yet"
+def create_label_image(slice: pd.DataFrame, r: int = 256, fill_holes = 5):
 
-    labels = ((np.asarray(labels, dtype=np.float32)/width) * resolution) # normalize labels
-    image = np.zeros((resolution, resolution))
-    label_id = 1
-
-    for xmin, xmax, ymin, ymax in labels:
-        for i in range(int(np.floor(xmin)), int(np.ceil(xmax))):
-            for j in range(int(np.floor(ymin)), int(np.ceil(ymax))):
-                image[i,j] = label_id
-        label_id += 1
-
-    return image
-
+    n = slice.shape[0]
+    x_list = list(slice['x'])
+    y_list = list(slice['y'])
+    label_list = list(slice["label_id"])
+    
+    I = np.zeros((r,r))
+    for j in tqdm(range(n)):
+        x = math.floor(x_list[j] * r) if math.floor(x_list[j] * r) < r else r-1
+        y = math.floor(y_list[j] * r) if math.floor(y_list[j] * r) < r else r-1
+        I[x,y] = label_list[j]
+    
+    # filling holes by dilation and erosion
+    
+    for i in range(fill_holes):
+        I = binary_dilation(I).astype(I.dtype)
+    for i in range(fill_holes):
+        I = binary_erosion(I).astype(I.dtype)
+    return I
+        
 
 def Mapping_M(slice: pd.DataFrame, r: int = 256):
     n = slice.shape[0]
