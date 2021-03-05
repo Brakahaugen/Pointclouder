@@ -130,7 +130,7 @@ def scatter_trees_on_grid(random_trees: list, width_height: list, allow_clusteri
 
 
 
-def get_random_sample(num_trees = 8, width: int = 8, height: int = 8, resolution: int = 1024, allow_clustering: bool = True, augmentation: dict = {}):
+def get_random_sample(num_trees = 16, width: int = 8, height: int = 8, resolution: int = 512, allow_clustering: bool = True, augmentation: dict = {}):
     print("getting")
     random_trees = get_n_random_trees(num_trees)
     print("processing")
@@ -148,15 +148,14 @@ def get_random_sample(num_trees = 8, width: int = 8, height: int = 8, resolution
     for seq in sequences:
         images.append(Mapping_M(seq, r = resolution))
     
-    label_image = create_label_image(sequences[-1], r = resolution, fill_holes=math.floor(resolution/50))
+    label_image = create_label_image(sequences[-1], r = resolution)
 
-    # print(images[0])
+    print(images[0])
     print("concattenating images")
     concatted_image = np.append(np.append(images[0], images[1], axis=1), images[2], axis=1)
 
     cv2.imshow("windows", concatted_image)
     cv2.imshow("windowsss", label_image)
-    
     cv2.waitKey(0)
     return concatted_image #A concatted image with the three images
 

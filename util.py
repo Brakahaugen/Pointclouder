@@ -4,10 +4,49 @@ import math
 import numpy as np
 from tqdm import tqdm
 import cv2
-from scipy.ndimage.morphology import binary_dilation, binary_erosion
 
+def fill_holes(I: np.array):
+    new_im = []
+    for row in tqdm(I):
+        starts = {}
+        ends = {}
+        new_row = row.copy()
+        for i in range(len(row)):
+            if (row[i]) != 0 and (row[i]) not in starts:
+                starts[(row[i])] = i
+            elif (row[i]) != 0:
+                ends[(row[i])] = i
+        # print(starts)
+        # print(ends)
+        # assert(False)
+        for key, val in ends.items():
+            for i in range(starts[key], ends[key]):
+                new_row[i] = key
+        new_im.append(new_row)
 
+    I = np.asarray(new_im)
+    new_im = []
 
+    for row in tqdm(I.T):
+        starts = {}
+        ends = {}
+        new_row = row.copy()
+        for i in range(len(row)):
+            if (row[i]) != 0 and (row[i]) not in starts:
+                starts[(row[i])] = i
+            elif (row[i]) != 0:
+                ends[(row[i])] = i
+        # print(starts)
+        # print(ends)
+        # assert(False)
+        for key, val in ends.items():
+            for i in range(starts[key], ends[key]):
+                new_row[i] = key
+
+        new_im.append(new_row)
+
+    I = np.asarray(new_im).T
+    return I
 
 def TDI(points: pd.DataFrame, k = 3):
     """
@@ -27,7 +66,7 @@ def TDI(points: pd.DataFrame, k = 3):
 
     return slices
 
-def create_label_image(slice: pd.DataFrame, r: int = 256, fill_holes = 5):
+def create_label_image(slice: pd.DataFrame, r: int = 256):
 
     n = slice.shape[0]
     x_list = list(slice['x'])
@@ -40,12 +79,9 @@ def create_label_image(slice: pd.DataFrame, r: int = 256, fill_holes = 5):
         y = math.floor(y_list[j] * r) if math.floor(y_list[j] * r) < r else r-1
         I[x,y] = label_list[j]
     
-    # filling holes by dilation and erosion
     
-    for i in range(fill_holes):
-        I = binary_dilation(I).astype(I.dtype)
-    for i in range(fill_holes):
-        I = binary_erosion(I).astype(I.dtype)
+    I = fill_holes(I)
+            
     return I
         
 
