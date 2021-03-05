@@ -2,8 +2,7 @@ from util import *
 import pandas as pd
 from glob import glob
 from random import random, shuffle, uniform, randint
-
-
+import scipy
 
 
 def get_n_random_trees(num_trees, tree_glob = "test_trees/*.las"):
@@ -114,52 +113,58 @@ def scatter_trees_on_grid(random_trees: list, width_height: list, allow_clusteri
             label_id += 1
 
 
-    # print("single tree", random_trees[0].points)
     merged_trees = random_trees[0]
     for tree in random_trees[1:]:
         merged_trees.points = pd.concat([merged_trees.points, tree.points])
 
-    print(merged_trees.points)
-
     return merged_trees
 
-# my1 = PyntCloud.from_file("test_trees/1.las")
-# my2 = PyntCloud.from_file("test_trees/2.las")
-# ts = preprocess_trees([my1,my2])
-# # print(ts[0].points, ts[1].points)
 
 
-
-def get_random_sample(num_trees = 16, width: int = 8, height: int = 8, resolution: int = 512, allow_clustering: bool = True, augmentation: dict = {}):
-    print("getting")
+def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolution: int = 64, allow_clustering: bool = True, augmentation: dict = {}):
+    ("getting")
     random_trees = get_n_random_trees(num_trees)
-    print("processing")
+    ("processing")
     random_trees = preprocess_trees(random_trees)
-    print("scattering")
+    ("scattering")
     scattered_trees_on_grid = scatter_trees_on_grid(random_trees, [width, height], allow_clustering=allow_clustering, augmentation=augmentation)
 
-    print("normalizing")
+    ("normalizing")
     scattered_trees_on_grid.points = normalize(scattered_trees_on_grid.points)
 
-    print("Creating sequences")
+    ("Creating sequences")
     sequences = TDI(scattered_trees_on_grid.points, 3)
     images = []
-    print("Mapping")
+    ("Mapping")
     for seq in sequences:
         images.append(Mapping_M(seq, r = resolution))
     
     label_image = create_label_image(sequences[-1], r = resolution)
 
-    print(images[0])
-    print("concattenating images")
+    ("concattenating images")
     concatted_image = np.append(np.append(images[0], images[1], axis=1), images[2], axis=1)
 
-    cv2.imshow("windows", concatted_image)
-    cv2.imshow("windowsss", label_image)
-    cv2.waitKey(0)
-    return concatted_image #A concatted image with the three images
+    return concatted_image, label_image #A concatted image with the three images
 
 
 if __name__ == "__main__":
-    print("starting program")
-    get_random_sample()
+    num_samples = 10000
+    import matplotlib
+
+
+    for i in tqdm(range(num_samples)):
+        example, target = get_random_sample(num_trees=randint(4,46))
+        # example, target = Image.fromarray(example), Image.fromarray(target)
+        
+        # example.save(
+        # target.save("data/train/labels/"+str(i)+".png")
+        # scipy.misc.imsave('outfile.jpg', image_array)
+        # cv2.imshow("windows", example)
+        # cv2.imshow("windowsss", target)
+        # cv2.waitKey(0)
+
+        cv2.imwrite("data/train/images/"+str(i)+".png", example) 
+        cv2.imwrite("data/train/labels/"+str(i)+".png", target)
+
+        
+

@@ -7,7 +7,7 @@ import cv2
 
 def fill_holes(I: np.array):
     new_im = []
-    for row in tqdm(I):
+    for row in (I):
         starts = {}
         ends = {}
         new_row = row.copy()
@@ -16,9 +16,7 @@ def fill_holes(I: np.array):
                 starts[(row[i])] = i
             elif (row[i]) != 0:
                 ends[(row[i])] = i
-        # print(starts)
-        # print(ends)
-        # assert(False)
+                
         for key, val in ends.items():
             for i in range(starts[key], ends[key]):
                 new_row[i] = key
@@ -27,7 +25,7 @@ def fill_holes(I: np.array):
     I = np.asarray(new_im)
     new_im = []
 
-    for row in tqdm(I.T):
+    for row in (I.T):
         starts = {}
         ends = {}
         new_row = row.copy()
@@ -36,9 +34,7 @@ def fill_holes(I: np.array):
                 starts[(row[i])] = i
             elif (row[i]) != 0:
                 ends[(row[i])] = i
-        # print(starts)
-        # print(ends)
-        # assert(False)
+                
         for key, val in ends.items():
             for i in range(starts[key], ends[key]):
                 new_row[i] = key
@@ -74,7 +70,7 @@ def create_label_image(slice: pd.DataFrame, r: int = 256):
     label_list = list(slice["label_id"])
     
     I = np.zeros((r,r))
-    for j in tqdm(range(n)):
+    for j in (range(n)):
         x = math.floor(x_list[j] * r) if math.floor(x_list[j] * r) < r else r-1
         y = math.floor(y_list[j] * r) if math.floor(y_list[j] * r) < r else r-1
         I[x,y] = label_list[j]
@@ -90,7 +86,6 @@ def Mapping_M(slice: pd.DataFrame, r: int = 256):
 
     x_list = list(slice['x'])
     y_list = list(slice['y'])
-    # print(slice.iloc[0])
     
     I = np.zeros((r,r,3))
     C = {} #C = (r, r)
@@ -98,19 +93,19 @@ def Mapping_M(slice: pd.DataFrame, r: int = 256):
         for j in range(r):
             C[i,j] = []
 
-    for j in tqdm(range(n)):
+    for j in (range(n)):
         x = math.floor(x_list[j] * r) if math.floor(x_list[j] * r) < r else r-1
         y = math.floor(y_list[j] * r) if math.floor(y_list[j] * r) < r else r-1
         I[x,y,0] = I[x,y,0] + 1 #Appending to the density
         C[x,y].append(slice.iloc[j]['z'])
 
-    for h in tqdm(range(r)):
+    for h in (range(r)):
         for t in range(r):
             z = C[h,t]
             val = abs(max(z) - min(z)) if z else 0
             I[h,t,1] = val
 
-    for h in tqdm(range(r)):
+    for h in (range(r)):
         for t in range(r):
             grad_h = 0
             for i in [-1,0,1]:
@@ -119,19 +114,14 @@ def Mapping_M(slice: pd.DataFrame, r: int = 256):
                         continue
                     grad_h += abs(I[h+i,t+j,1] - I[h,t,1])
             I[h,t,2] = grad_h
-    # normalize each channel from 0 to 255
-    print(I.shape)
-    print(I.shape[2])
+
 
 
     scale_factors = 255 / np.amax(I,axis=(0,1))
-    print("LETS GO")
-    print(scale_factors)
     for z in range(I.shape[2]):
         for x in range(I.shape[0]):
             for y in range(I.shape[1]):
                 I[x,y,z] = scale_factors[z]*I[x,y,z]
-    print(I)
     return I#np.floor((I/r) * 256).astype(np.uint8)
 
 
