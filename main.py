@@ -1,11 +1,13 @@
 from util import *
 import pandas as pd
 from glob import glob
-from random import random, shuffle, uniform, randint
-import scipy
+from random import shuffle, uniform, randint
+import os.path
+from laspy.file import File
 
 
-def get_n_random_trees(num_trees, tree_glob = "test_trees/*.las"):
+
+def get_n_random_trees(num_trees, tree_glob = "train_trees/*.las"):
     """
     Returns n random trees from the given directory
     the format of the returned trees are loaded pyntcloud objects
@@ -121,9 +123,9 @@ def scatter_trees_on_grid(random_trees: list, width_height: list, allow_clusteri
 
 
 
-def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolution: int = 64, allow_clustering: bool = True, augmentation: dict = {}):
+def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolution: int = 64, allow_clustering: bool = True, augmentation: dict = {}, tree_glob: str = "train_trees/*.las"):
     ("getting")
-    random_trees = get_n_random_trees(num_trees)
+    random_trees = get_n_random_trees(num_trees, tree_glob=tree_glob)
     ("processing")
     random_trees = preprocess_trees(random_trees)
     ("scattering")
@@ -147,18 +149,63 @@ def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolutio
     return concatted_image, label_image #A concatted image with the three images
 
 
-if __name__ == "__main__":
-    num_samples = 10000
-    import matplotlib
+def create_test_image():
 
+    resolution = 64
+
+    # merged_trees = None
+    # for tree in glob("test_trees/*.las"):
+    #     if merged_trees == None:
+    #         merged_trees = PyntCloud.from_file(tree)
+    #         tree = tree.replace("test_trees\\", "test_trees\\myMan").replace(".las", ".obj")
+    #         print(tree)
+    #         merged_trees.to_file(tree)
+    #         print(merged_trees.points)
+    #         merged_trees = None
+    #     else:
+    #         tree = PyntCloud.from_file(tree)
+    #         merged_trees.points = pd.concat([merged_trees.points, tree.points])
+    #     return
+    merged_trees = PyntCloud.from_file("test_trees\merged\merged_trees_with_id.las")
+
+    print(merged_trees.points)
+    merged_trees.points["label_id"] = merged_trees.points["original_cloud_index"]
+    print(merged_trees.points["label_id"].max())
+    print(merged_trees.points["label_id"].min())
+    
+
+    merged_trees.points = normalize(merged_trees.points)
+    # merged_trees.to_file("normal.xyz")
+
+
+    ("Creating sequences")
+    sequences = TDI(merged_trees.points, 3)
+    images = []
+    ("Mapping")
+    for seq in sequences:
+        images.append(Mapping_M(seq, r = resolution))
+    
+    label_image = create_label_image(sequences[-1], r = resolution)
+
+    ("concattenating images")
+    concatted_image = np.append(np.append(images[0], images[1], axis=1), images[2], axis=1)
+
+    return concatted_image, label_image #A concatted image with the three images
+    
+    
+
+
+if __name__ == "__main__":
+    num_samples = 1000
+
+    train_val_ratio = 5
 
     for i in tqdm(range(num_samples)):
-        example, target = get_random_sample(num_trees=randint(4,46))
-        # example, target = Image.fromarray(example), Image.fromarray(target)
+        if os.path.exists("data/train/images/"+str(i)+".png"):
+            continue
+
+        example, target = get_random_sample(num_trees=randint(4,46), tree_glob="train_trees/*.las" )
         
-        # example.save(
-        # target.save("data/train/labels/"+str(i)+".png")
-        # scipy.misc.imsave('outfile.jpg', image_array)
         # cv2.imshow("windows", example)
         # cv2.imshow("windowsss", target)
         # cv2.waitKey(0)
@@ -166,5 +213,9 @@ if __name__ == "__main__":
         cv2.imwrite("data/train/images/"+str(i)+".png", example) 
         cv2.imwrite("data/train/labels/"+str(i)+".png", target)
 
-        
+        if i % train_val_ratio == 0:
+            example, target = get_random_sample(num_trees=randint(4,46), tree_glob="test_trees/*.las" )
+            cv2.imwrite("data/val/images/"+str(int(i/train_val_ratio))+".png", example) 
+            cv2.imwrite("data/val/labels/"+str(int(i/train_val_ratio))+".png", target)
 
+        
