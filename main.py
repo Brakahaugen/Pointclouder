@@ -152,20 +152,7 @@ def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolutio
 def create_test_image():
 
     resolution = 64
-
-    # merged_trees = None
-    # for tree in glob("test_trees/*.las"):
-    #     if merged_trees == None:
-    #         merged_trees = PyntCloud.from_file(tree)
-    #         tree = tree.replace("test_trees\\", "test_trees\\myMan").replace(".las", ".obj")
-    #         print(tree)
-    #         merged_trees.to_file(tree)
-    #         print(merged_trees.points)
-    #         merged_trees = None
-    #     else:
-    #         tree = PyntCloud.from_file(tree)
-    #         merged_trees.points = pd.concat([merged_trees.points, tree.points])
-    #     return
+    
     merged_trees = PyntCloud.from_file("test_trees\merged\merged_trees_with_id.las")
 
     print(merged_trees.points)
@@ -193,9 +180,15 @@ def create_test_image():
     return concatted_image, label_image #A concatted image with the three images
     
     
-
+# if __name__ == "__main__":
+# example, target = create_test_image()
+# cv2.imwrite("data/test/images/"+str(0)+".png", example) 
+# cv2.imwrite("data/test/labels/"+str(0)+".png", target)
+# import sys
+# sys.exit()
 
 if __name__ == "__main__":
+    
     num_samples = 1000
 
     train_val_ratio = 5

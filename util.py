@@ -79,10 +79,10 @@ def create_label_image(slice: pd.DataFrame, r: int = 256):
     I = fill_holes(I)
 
     # SUBJECT TO CHANGE
-    # for i in range(I.shape[0]):
-    #     for j in range(I.shape[1]):
-    #         if I[i,j] != 0:
-    #             I[i,j] = 1
+    for i in range(I.shape[0]):
+        for j in range(I.shape[1]):
+            if I[i,j] != 0:
+                I[i,j] = 1
             
     return I
         
