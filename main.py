@@ -55,6 +55,14 @@ def normalize_trees_on_max_xyz(random_trees: list, cols: list, col_max_values: l
             tree.points[col] = tree.points[col].div(col_max)
     return random_trees
 
+    #This method is probably more correct, because the preserve x,y relations
+    tree.points["x"] = tree.points["x"].div(max(col_max_values[1:]))
+    tree.points["y"] = tree.points["y"].div(max(col_max_values[1:]))
+    tree.points["z"] = tree.points["z"].div(col_max_values[2])
+    return random_trees
+
+    
+
 def preprocess_trees(random_trees: list):
     """
     For each tree, put the lowest point in origo
