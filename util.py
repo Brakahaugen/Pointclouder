@@ -144,7 +144,7 @@ def create_sub_mask_annotation(sub_mask, image_id, category_id, annotation_id = 
         'area': area
     }
     annotation_id += 1
-    return annotation
+    return annotation if annotation["segmentation"] else None
 
 def create_labels(I, image_id):
     submasks = create_sub_masks(I)

@@ -193,7 +193,7 @@ def create_test_image(resolution=64):
 
 if __name__ == "__main__":
     
-    num_samples = 1000
+    num_samples = 1002
     resolution = 256
     train_val_ratio = 5
 
@@ -209,7 +209,7 @@ if __name__ == "__main__":
 
         example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="train_trees/*.las", image_id=i, resolution=resolution)
         cv2.imwrite("data/train/images/"+str(i)+".png", example) 
-        with open("data/train/labels/"+str(i)+".json", "a") as f:
+        with open("data/train/labels/"+str(i)+".json", "w") as f:
             f.write(json.dumps(labels, indent = 4))
             f.close()
 
