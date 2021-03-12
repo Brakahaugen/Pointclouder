@@ -216,7 +216,7 @@ if __name__ == "__main__":
         
 
         if i % train_val_ratio == 0:
-            example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="train_trees/*.las", image_id=i, resolution=resolution)
+            example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="test_trees/*.las", image_id=int(i/train_val_ratio), resolution=resolution)
             cv2.imwrite("data/val/images/"+str(int(i/train_val_ratio))+".png", example) 
             with open("data/val/labels/"+str(int(i/train_val_ratio))+".json", "a") as f:
                 f.write(json.dumps(labels, indent = 4))
