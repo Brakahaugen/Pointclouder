@@ -4,9 +4,15 @@ import math
 import numpy as np
 from tqdm import tqdm
 import cv2
+import numpy as np                                 # (pip install numpy)
+from skimage import measure                        # (pip install scikit-image)
+from shapely.geometry import Polygon, MultiPolygon # (pip install Shapely)
+import json
+
 
 def fill_holes(I: np.array):
     new_im = []
+
     for row in (I):
         starts = {}
         ends = {}
@@ -18,13 +24,14 @@ def fill_holes(I: np.array):
                 ends[(row[i])] = i
                 
         for key, val in ends.items():
+            
             for i in range(starts[key], ends[key]):
                 new_row[i] = key
         new_im.append(new_row)
 
     I = np.asarray(new_im)
     new_im = []
-
+    
     for row in (I.T):
         starts = {}
         ends = {}
@@ -36,6 +43,7 @@ def fill_holes(I: np.array):
                 ends[(row[i])] = i
                 
         for key, val in ends.items():
+
             for i in range(starts[key], ends[key]):
                 new_row[i] = key
 
@@ -62,7 +70,99 @@ def TDI(points: pd.DataFrame, k = 3):
 
     return slices
 
-def create_label_image(slice: pd.DataFrame, r: int = 256):
+def create_sub_masks(mask_image):
+    width, height = mask_image.shape
+
+    # Initialize a dictionary of sub-masks indexed by RGB colors
+    sub_masks = {}
+    for x in range(width):
+        for y in range(height):
+            # Get the RGB values of the pixel
+            pixel = mask_image[x,y]
+
+            # If the pixel is not black...
+            if pixel != 0:
+                # Check to see if we've created a sub-mask...
+                pixel_str = str(pixel)
+                sub_mask = sub_masks.get(pixel_str)
+                if sub_mask is None:
+                   # Create a sub-mask (one bit per pixel) and add to the dictionary
+                    # Note: we add 1 pixel of padding in each direction
+                    # because the contours module doesn't handle cases
+                    # where pixels bleed to the edge of the image
+                    sub_masks[pixel_str] = np.zeros((width+2,height+2))
+
+                # Set the pixel value to 1 (default is 0), accounting for padding
+                sub_masks[pixel_str][x+1,y+1] = 1
+
+    return sub_masks
+
+
+def create_sub_mask_annotation(sub_mask, image_id, category_id, annotation_id = 0):
+    # Find contours (boundary lines) around each sub-mask
+    # Note: there could be multiple contours if the object
+    # is partially occluded. (E.g. an elephant behind a tree)
+
+
+    contours = measure.find_contours(sub_mask, 0.5, positive_orientation='low')
+
+    segmentations = []
+    polygons = []
+    for contour in contours:
+        # Flip from (row, col) representation to (x, y)
+        # and subtract the padding pixel
+        for i in range(len(contour)):
+            row, col = contour[i]
+            contour[i] = (col - 1, row - 1)
+
+        # Make a polygon and simplify it
+        poly = Polygon(contour)
+        poly = poly.simplify(1.0, preserve_topology=False)
+        polygons.append(poly)
+        segmentation = np.array(poly.exterior.coords).ravel().tolist()
+        segmentations.append(segmentation)
+
+    # Combine the polygons to calculate the bounding box and area
+    multi_poly = MultiPolygon(polygons)
+    
+    if not multi_poly.bounds:
+        return None
+
+    x, y, max_x, max_y = multi_poly.bounds
+    width = max_x - x
+    height = max_y - y
+    bbox = (x, y, width, height)
+    area = multi_poly.area
+
+    annotation = {
+        'segmentation': segmentations,
+        'iscrowd': 0,
+        'image_id': image_id,
+        'category_id': category_id,
+        'id': annotation_id,
+        'bbox': bbox,
+        'area': area
+    }
+    annotation_id += 1
+    return annotation
+
+def create_labels(I, image_id):
+    submasks = create_sub_masks(I)
+    # print(submasks)
+    
+    annotations = []
+    annotation_id = 0
+    for color, sub_mask in submasks.items():
+        category_id = 1
+        annotation = create_sub_mask_annotation(sub_mask, image_id, category_id, annotation_id)
+        if annotation:
+            annotations.append(annotation)
+            annotation_id += 1        
+
+    return annotations
+    
+
+def create_label_image(slice: pd.DataFrame, r: int = 256, image_id = 0):
 
     n = slice.shape[0]
     x_list = list(slice['x'])
@@ -75,16 +175,17 @@ def create_label_image(slice: pd.DataFrame, r: int = 256):
         y = math.floor(y_list[j] * r) if math.floor(y_list[j] * r) < r else r-1
         I[x,y] = label_list[j]
     
-    
     I = fill_holes(I)
+    
+    label = create_labels(I, image_id)
 
     # SUBJECT TO CHANGE
-    for i in range(I.shape[0]):
-        for j in range(I.shape[1]):
-            if I[i,j] != 0:
-                I[i,j] = 1
-            
-    return I
+    # for i in range(I.shape[0]):
+    #     for j in range(I.shape[1]):
+    #         if I[i,j] != 0:
+    #             I[i,j] = 1
+    
+    return I, label
         
 
 def Mapping_M(slice: pd.DataFrame, r: int = 256):

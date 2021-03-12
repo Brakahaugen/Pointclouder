@@ -131,7 +131,7 @@ def scatter_trees_on_grid(random_trees: list, width_height: list, allow_clusteri
 
 
 
-def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolution: int = 64, allow_clustering: bool = True, augmentation: dict = {}, tree_glob: str = "train_trees/*.las"):
+def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolution: int = 64, allow_clustering: bool = True, augmentation: dict = {}, tree_glob: str = "train_trees/*.las", image_id = 0):
     ("getting")
     random_trees = get_n_random_trees(num_trees, tree_glob=tree_glob)
     ("processing")
@@ -144,18 +144,17 @@ def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolutio
 
     ("Creating sequences")
     sequences = TDI(scattered_trees_on_grid.points, 3)
-    images = []
-    ("Mapping")
-    for seq in sequences:
-        images.append(Mapping_M(seq, r = resolution))
+    image = Mapping_M(sequences[-1], r = resolution)
+    # images = []
+    # ("Mapping")
+    # for seq in sequences:
+    #     images.append(Mapping_M(seq, r = resolution))
+    # ("concattenating images")
+    # concatted_image = np.append(np.append(images[0], images[1], axis=1), images[2], axis=1)
+ 
+    label_image, label = create_label_image(sequences[-1], r = resolution, image_id=image_id)
+    return image, label_image, label #A image
     
-    label_image = create_label_image(sequences[-1], r = resolution)
-
-    ("concattenating images")
-    concatted_image = np.append(np.append(images[0], images[1], axis=1), images[2], axis=1)
-
-    return concatted_image, label_image #A concatted image with the three images
-
 
 def create_test_image():
 
@@ -175,17 +174,16 @@ def create_test_image():
 
     ("Creating sequences")
     sequences = TDI(merged_trees.points, 3)
-    images = []
-    ("Mapping")
-    for seq in sequences:
-        images.append(Mapping_M(seq, r = resolution))
+    image = Mapping_M(sequences[-1],  r = resolution)
+    # images = []
+    # ("Mapping")
+    # for seq in sequences:
+    #     images.append(Mapping_M(seq, r = resolution))
+    # ("concattenating images")
+    # concatted_image = np.append(np.append(images[0], images[1], axis=1), images[2], axis=1)
     
-    label_image = create_label_image(sequences[-1], r = resolution)
-
-    ("concattenating images")
-    concatted_image = np.append(np.append(images[0], images[1], axis=1), images[2], axis=1)
-
-    return concatted_image, label_image #A concatted image with the three images
+    label_image, label = create_label_image(sequences[-1], r = resolution)
+    return image, label_image, label #A image
     
     
 # if __name__ == "__main__":
@@ -202,21 +200,26 @@ if __name__ == "__main__":
     train_val_ratio = 5
 
     for i in tqdm(range(num_samples)):
-        if os.path.exists("data/train/images/"+str(i)+".png"):
+        if os.path.exists("data/val/images/"+str(i)+".png"):
             continue
 
-        example, target = get_random_sample(num_trees=randint(4,46), tree_glob="train_trees/*.las" )
+        example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="train_trees/*.las", image_id=i)
         
         # cv2.imshow("windows", example)
         # cv2.imshow("windowsss", target)
         # cv2.waitKey(0)
 
-        cv2.imwrite("data/train/images/"+str(i)+".png", example) 
-        cv2.imwrite("data/train/labels/"+str(i)+".png", target)
+        cv2.imwrite("data/val/images/"+str(i)+".png", example) 
+        # cv2.imwrite("data/val/labels/"+str(i)+".png", target)
+        with open("data/val/labels/"+str(i)+".json", "a") as f:
+            f.write(json.dumps(labels, indent = 4))
+            f.close()
 
-        if i % train_val_ratio == 0:
-            example, target = get_random_sample(num_trees=randint(4,46), tree_glob="test_trees/*.las" )
-            cv2.imwrite("data/val/images/"+str(int(i/train_val_ratio))+".png", example) 
-            cv2.imwrite("data/val/labels/"+str(int(i/train_val_ratio))+".png", target)
+        
+
+        # if i % train_val_ratio == 0:
+            # example, target = get_random_sample(num_trees=randint(4,46), tree_glob="test_trees/*.las" )
+            # cv2.imwrite("data/val/images/"+str(int(i/train_val_ratio))+".png", example) 
+            # cv2.imwrite("data/val/labels/"+str(int(i/train_val_ratio))+".png", target)
 
         
