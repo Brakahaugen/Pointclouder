@@ -156,9 +156,7 @@ def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolutio
     return image, label_image, label #A image
     
 
-def create_test_image():
-
-    resolution = 64
+def create_test_image(resolution=64):
     
     merged_trees = PyntCloud.from_file("test_trees\merged\merged_trees_with_id.las")
 
@@ -199,6 +197,12 @@ if __name__ == "__main__":
     resolution = 256
     train_val_ratio = 5
 
+    example, target, labels = create_test_image(resolution=resolution)
+    cv2.imwrite("data/test/images/"+str(0)+".png", example) 
+    with open("data/test/labels/"+str(0)+".json", "a") as f:
+        f.write(json.dumps(labels, indent = 4))
+        f.close()
+
     for i in tqdm(range(num_samples)):
         if os.path.exists("data/val/images/"+str(i)+".png"):
             continue
@@ -213,7 +217,7 @@ if __name__ == "__main__":
 
         if i % train_val_ratio == 0:
             example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="train_trees/*.las", image_id=i, resolution=resolution)
-            cv2.imwrite("data/val/images/"+str(i)+".png", example) 
-            with open("data/val/labels/"+str(i)+".json", "a") as f:
+            cv2.imwrite("data/val/images/"+str(int(i/train_val_ratio))+".png", example) 
+            with open("data/val/labels/"+str(int(i/train_val_ratio))+".json", "a") as f:
                 f.write(json.dumps(labels, indent = 4))
                 f.close()
