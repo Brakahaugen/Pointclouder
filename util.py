@@ -153,7 +153,7 @@ def create_labels(I, image_id):
     annotations = []
     annotation_id = 0
     for color, sub_mask in submasks.items():
-        category_id = 1
+        category_id = 0
         annotation = create_sub_mask_annotation(sub_mask, image_id, category_id, annotation_id)
         if annotation:
             annotations.append(annotation)
