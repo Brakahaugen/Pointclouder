@@ -196,30 +196,24 @@ def create_test_image():
 if __name__ == "__main__":
     
     num_samples = 1000
-
+    resolution = 256
     train_val_ratio = 5
 
     for i in tqdm(range(num_samples)):
         if os.path.exists("data/val/images/"+str(i)+".png"):
             continue
 
-        example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="train_trees/*.las", image_id=i)
-        
-        # cv2.imshow("windows", example)
-        # cv2.imshow("windowsss", target)
-        # cv2.waitKey(0)
-
-        cv2.imwrite("data/val/images/"+str(i)+".png", example) 
-        # cv2.imwrite("data/val/labels/"+str(i)+".png", target)
-        with open("data/val/labels/"+str(i)+".json", "a") as f:
+        example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="train_trees/*.las", image_id=i, resolution=resolution)
+        cv2.imwrite("data/train/images/"+str(i)+".png", example) 
+        with open("data/train/labels/"+str(i)+".json", "a") as f:
             f.write(json.dumps(labels, indent = 4))
             f.close()
 
         
 
-        # if i % train_val_ratio == 0:
-            # example, target = get_random_sample(num_trees=randint(4,46), tree_glob="test_trees/*.las" )
-            # cv2.imwrite("data/val/images/"+str(int(i/train_val_ratio))+".png", example) 
-            # cv2.imwrite("data/val/labels/"+str(int(i/train_val_ratio))+".png", target)
-
-        
+        if i % train_val_ratio == 0:
+            example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="train_trees/*.las", image_id=i, resolution=resolution)
+            cv2.imwrite("data/val/images/"+str(i)+".png", example) 
+            with open("data/val/labels/"+str(i)+".json", "a") as f:
+                f.write(json.dumps(labels, indent = 4))
+                f.close()
