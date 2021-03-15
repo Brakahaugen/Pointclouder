@@ -53,7 +53,7 @@ def normalize_trees_on_max_xyz(random_trees: list, cols: list, col_max_values: l
     for tree in random_trees:
         for col, col_max in zip(cols, col_max_values):
             tree.points[col] = tree.points[col].div(col_max)
-    return random_trees
+    # return random_trees
 
     #This method is probably more correct, because the preserve x,y relations
     tree.points["x"] = tree.points["x"].div(max(col_max_values[1:]))
@@ -193,7 +193,8 @@ def create_test_image(resolution=64):
 
 if __name__ == "__main__":
     
-    num_samples = 1002
+    num_samples = 20000
+
     resolution = 256
     train_val_ratio = 5
 
@@ -204,10 +205,11 @@ if __name__ == "__main__":
         f.close()
 
     for i in tqdm(range(num_samples)):
-        if os.path.exists("data/val/images/"+str(i)+".png"):
+        if os.path.exists("data/train/images/"+str(i)+".png"):
             continue
+        width_height = randint(5,20)
 
-        example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="train_trees/*.las", image_id=i, resolution=resolution)
+        example, target, labels = get_random_sample(num_trees=randint(2,width_height*4), tree_glob="train_trees/*.las", image_id=i, resolution=resolution,  width=width_height, height = width_height)
         cv2.imwrite("data/train/images/"+str(i)+".png", example) 
         with open("data/train/labels/"+str(i)+".json", "w") as f:
             f.write(json.dumps(labels, indent = 4))
@@ -216,7 +218,7 @@ if __name__ == "__main__":
         
 
         if i % train_val_ratio == 0:
-            example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="test_trees/*.las", image_id=int(i/train_val_ratio), resolution=resolution)
+            example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="test_trees/*.las", image_id=int(i/train_val_ratio), resolution=resolution, width=width_height, height = width_height)
             cv2.imwrite("data/val/images/"+str(int(i/train_val_ratio))+".png", example) 
             with open("data/val/labels/"+str(int(i/train_val_ratio))+".json", "a") as f:
                 f.write(json.dumps(labels, indent = 4))
