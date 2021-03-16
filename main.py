@@ -193,9 +193,9 @@ def create_test_image(resolution=64):
 
 if __name__ == "__main__":
     
-    num_samples = 20000
+    num_samples = 200
 
-    resolution = 256
+    resolution = 512
     train_val_ratio = 5
 
     example, target, labels = create_test_image(resolution=resolution)
