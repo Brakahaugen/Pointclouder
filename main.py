@@ -207,14 +207,14 @@ def create_manual_label_image(r, ls, size = 10, width = 2):
                 try:
                     I[int(c[1] + x), int(c[0] + y)] = 255
                 except:
-                    print("whatever")
+                    ("whatever")
 
         for y in range(-size + 1, size):
             for x in range(-width + 1, width):
                 try:
                     I[int(c[1] + x), int(c[0] + y)] = 255
                 except:
-                    print("whatever")
+                    ("whatever")
 
     cv2.imwrite("test_image.png", I)
     return 
@@ -232,7 +232,7 @@ if __name__ == "__main__":
 
     create_manual_label_image(resolution, labels)
 
-    with open("data/test/labels/"+str(0)+".json", "a") as f:
+    with open("data/test/labels/"+str(0)+".json", "w+") as f:
         f.write(json.dumps(labels, indent = 4))
         f.close()
 
@@ -252,6 +252,6 @@ if __name__ == "__main__":
         if i % train_val_ratio == 0:
             example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="test_trees/*.las", image_id=int(i/train_val_ratio), resolution=resolution, width=width_height, height = width_height)
             cv2.imwrite("data/val/images/"+str(int(i/train_val_ratio))+".png", example) 
-            with open("data/val/labels/"+str(int(i/train_val_ratio))+".json", "a") as f:
+            with open("data/val/labels/"+str(int(i/train_val_ratio))+".json", "w") as f:
                 f.write(json.dumps(labels, indent = 4))
                 f.close()

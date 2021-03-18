@@ -94,7 +94,8 @@ def create_sub_masks(mask_image):
 
                 # Set the pixel value to 1 (default is 0), accounting for padding
                 sub_masks[pixel_str][x+1,y+1] = 1
-
+    print("Sub-masks", sub_masks)
+    print("len", len(sub_masks))
     return sub_masks
 
 
@@ -105,7 +106,6 @@ def create_sub_mask_annotation(sub_mask, image_id, category_id, annotation_id = 
 
 
     contours = measure.find_contours(sub_mask, 0.5, positive_orientation='low')
-
     segmentations = []
     polygons = []
     for contour in contours:
