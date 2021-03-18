@@ -176,6 +176,7 @@ def create_label_image(slice: pd.DataFrame, r: int = 256, image_id = 0):
         I[x,y] = label_list[j]
     
     I = fill_holes(I)
+
     
     label = create_labels(I, image_id)
 
@@ -184,7 +185,11 @@ def create_label_image(slice: pd.DataFrame, r: int = 256, image_id = 0):
     #     for j in range(I.shape[1]):
     #         if I[i,j] != 0:
     #             I[i,j] = 1
-    
+    for x in range(I.shape[0]):
+        for y in range(I.shape[1]):
+            if I[x,y] > 0:
+                I[x,y] = 255
+        
     return I, label
         
 
