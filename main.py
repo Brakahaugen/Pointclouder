@@ -197,31 +197,24 @@ def create_manual_label_image(r, ls, size = 10, width = 2):
 
     for l in ls:
         l  = l["segmentation"][0]
-        print(l)
         l = [l[i:i+2] for i in range(0, len(l), 2)]        # Use xrange in py2k
-        print(l)
-        print(Polygon(l))
+
         c = Polygon(l).centroid
-        print(c)
         c = c.coords[0]
-        print(c)
-        print(c[0])
-        print(c[1])
 
         for x in range(-size + 1, size):
             for y in range(-width + 1, width):
-                print(int(c[1] + x), int(c[1] + y))
                 try:
                     I[int(c[1] + x), int(c[0] + y)] = 255
                 except:
-                    ("whatever")
+                    print("whatever")
 
         for y in range(-size + 1, size):
             for x in range(-width + 1, width):
                 try:
                     I[int(c[1] + x), int(c[0] + y)] = 255
                 except:
-                    ("whatever")
+                    print("whatever")
 
     cv2.imwrite("test_image.png", I)
     return 
