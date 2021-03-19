@@ -94,8 +94,6 @@ def create_sub_masks(mask_image):
 
                 # Set the pixel value to 1 (default is 0), accounting for padding
                 sub_masks[pixel_str][x+1,y+1] = 1
-    print("Sub-masks", sub_masks)
-    print("len", len(sub_masks))
     return sub_masks
 
 

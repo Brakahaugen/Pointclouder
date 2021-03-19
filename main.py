@@ -224,7 +224,7 @@ if __name__ == "__main__":
     
     num_samples = 200
 
-    resolution = 512
+    resolution = 256
     train_val_ratio = 5
 
     example, target, labels = create_test_image(resolution=resolution)
@@ -232,16 +232,18 @@ if __name__ == "__main__":
 
     create_manual_label_image(resolution, labels)
 
-    with open("data/test/labels/"+str(0)+".json", "w+") as f:
+    with open("data/test/labels/"+str(0)+".json", "w") as f:
         f.write(json.dumps(labels, indent = 4))
         f.close()
 
     for i in tqdm(range(num_samples)):
         if os.path.exists("data/train/images/"+str(i)+".png"):
             continue
-        width_height = randint(5,20)
 
-        example, target, labels = get_random_sample(num_trees=randint(2,width_height*4), tree_glob="train_trees/*.las", image_id=i, resolution=resolution,  width=width_height, height = width_height)
+        width_height = randint(9,11)
+        num_trees = randint(10,80)
+
+        example, target, labels = get_random_sample(num_trees, tree_glob="train_trees/*.las", image_id=i, resolution=resolution,  width=width_height, height = width_height)
         cv2.imwrite("data/train/images/"+str(i)+".png", example) 
         with open("data/train/labels/"+str(i)+".json", "w") as f:
             f.write(json.dumps(labels, indent = 4))
@@ -250,7 +252,7 @@ if __name__ == "__main__":
         
 
         if i % train_val_ratio == 0:
-            example, target, labels = get_random_sample(num_trees=randint(4,46), tree_glob="test_trees/*.las", image_id=int(i/train_val_ratio), resolution=resolution, width=width_height, height = width_height)
+            example, target, labels = get_random_sample(num_trees=num_trees, tree_glob="test_trees/*.las", image_id=int(i/train_val_ratio), resolution=resolution, width=width_height, height = width_height)
             cv2.imwrite("data/val/images/"+str(int(i/train_val_ratio))+".png", example) 
             with open("data/val/labels/"+str(int(i/train_val_ratio))+".json", "w") as f:
                 f.write(json.dumps(labels, indent = 4))
