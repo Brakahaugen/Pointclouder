@@ -222,7 +222,7 @@ def create_manual_label_image(r, ls, size = 10, width = 2):
 
 if __name__ == "__main__":
     
-    num_samples = 200
+    num_samples = 20000
 
     resolution = 256
     train_val_ratio = 5
