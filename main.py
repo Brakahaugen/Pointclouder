@@ -157,7 +157,7 @@ def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolutio
     return image, label_image, label #A image
     
 
-def create_test_image(resolution=64, dir_id: str = "sub1"):
+def create_test_image(resolution=64, dir_id: str = "sub1", image_id=0):
     
     merged_trees = PyntCloud.from_file("test_trees/subareas/" + dir_id + ".las")
 
@@ -182,7 +182,7 @@ def create_test_image(resolution=64, dir_id: str = "sub1"):
     # ("concattenating images")
     # concatted_image = np.append(np.append(images[0], images[1], axis=1), images[2], axis=1)
     
-    label_image, label = create_label_image(sequences[-1], r = resolution)
+    label_image, label = create_label_image(sequences[-1], r = resolution, image_id=image_id)
     return image, label_image, label #A image
     
     
@@ -193,7 +193,7 @@ def create_test_image(resolution=64, dir_id: str = "sub1"):
 # import sys
 # sys.exit()
 
-def create_manual_label_image(r, ls, size = 10, width = 2):
+def create_manual_label_image(r, ls, size = 10, width = 2, image_id = 0):
     I = np.zeros((r,r))
 
     for l in ls:
@@ -230,10 +230,10 @@ if __name__ == "__main__":
 
     test_ims = ["sub1", "sub2", "sub3", "sub4"]
     for i in range(len(test_ims)):
-        example, target, labels = create_test_image(resolution=resolution, dir_id=test_ims[i])
+        example, target, labels = create_test_image(resolution=resolution, dir_id=test_ims[i], image_id = i)
         cv2.imwrite("data/test/images/"+str(i)+".png", example) 
 
-        create_manual_label_image(resolution, labels)
+        create_manual_label_image(resolution, labels, image_id = i)
 
         with open("data/test/labels/"+str(i)+".json", "w") as f:
             f.write(json.dumps(labels, indent = 4))
