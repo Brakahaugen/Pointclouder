@@ -159,9 +159,10 @@ def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolutio
 
 def create_test_image(resolution=64, dir_id: str = "sub1"):
     
-    merged_trees = PyntCloud.from_file("test_trees/" + dir_id + "/" + dir_id + ".las")
+    merged_trees = PyntCloud.from_file("test_trees/subareas/" + dir_id + ".las")
 
-    print(merged_trees.points)
+    print("POINTS HALLO BROR:", merged_trees.points)
+
     merged_trees.points["label_id"] = merged_trees.points["original_cloud_index"]
     print(merged_trees.points["label_id"].max())
     print(merged_trees.points["label_id"].min())
