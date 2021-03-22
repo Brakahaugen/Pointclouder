@@ -163,7 +163,7 @@ def create_test_image(resolution=64, dir_id: str = "sub1", image_id=0):
 
     print("POINTS HALLO BROR:", merged_trees.points)
 
-    merged_trees.points["label_id"] = merged_trees.points["original_cloud_index"]
+    merged_trees.points["label_id"] = merged_trees.points["original_cloud_index"] + 1
     print(merged_trees.points["label_id"].max())
     print(merged_trees.points["label_id"].min())
     
