@@ -167,8 +167,18 @@ def create_test_image(resolution=64, dir_id: str = "sub1", image_id=0):
     print(merged_trees.points["label_id"].max())
     print(merged_trees.points["label_id"].min())
     
+    
+    print("x: ", merged_trees.points["x"].max(), merged_trees.points["x"].min())
+    print("y: ", merged_trees.points["y"].max(), merged_trees.points["y"].min())
+    print("z: ", merged_trees.points["z"].max(), merged_trees.points["z"].min())
+    
 
     merged_trees.points = normalize(merged_trees.points)
+    print("normalize")
+    print("x: ", merged_trees.points["x"].max(), merged_trees.points["x"].min())
+    print("y: ", merged_trees.points["y"].max(), merged_trees.points["y"].min())
+    print("z: ", merged_trees.points["z"].max(), merged_trees.points["z"].min())
+    print(merged_trees.points)
     # merged_trees.to_file("normal.xyz")
 
 
@@ -225,8 +235,8 @@ if __name__ == "__main__":
     
     num_samples = 20000
 
-    resolution = 128
-    train_val_ratio = 5
+    resolution = 256
+    train_val_ratio = 10
 
     test_ims = ["sub1", "sub2", "sub3", "sub4"]
     for i in range(len(test_ims)):
@@ -243,7 +253,7 @@ if __name__ == "__main__":
         if os.path.exists("data/train/images/"+str(i)+".png"):
             continue
 
-        width_height = randint(3,8)
+        width_height = randint(3,12)
         num_trees = randint(4,25)
 
         example, target, labels = get_random_sample(num_trees, tree_glob="train_trees/*.las", image_id=i, resolution=resolution,  width=width_height, height = width_height)
