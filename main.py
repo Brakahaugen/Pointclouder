@@ -7,6 +7,19 @@ from laspy.file import File
 from shapely.geometry import Polygon, Point
 
 
+def rotate(px,py, angle):
+    """
+    Rotate a point counterclockwise by a given angle around a given origin.
+
+    The angle should be given in radians.
+    """
+    ox, oy = 0, 0
+    
+
+    qx = ox + np.cos(angle) * (px - ox) - np.sin(angle) * (py - oy)
+    qy = oy + np.sin(angle) * (px - ox) + np.cos(angle) * (py - oy)
+    return qx, qy
+
 
 def get_n_random_trees(num_trees, tree_glob = "train_trees/*.las"):
     """
@@ -19,11 +32,13 @@ def get_n_random_trees(num_trees, tree_glob = "train_trees/*.las"):
 
     trees = []
     for file in files:
-        trees.append(PyntCloud.from_file(file))
+        tree = PyntCloud.from_file(file)
 
+        tree.points["x"], tree.points["y"] = rotate(tree.points["x"], tree.points["y"], math.radians(randint(1,360)))
+
+        trees.append(tree)
     return trees
-
-
+    
 def put_in_origo(pc: pd.DataFrame, cols: list):
     """
     Sets the minimum point of the dataframe into origo, and translates all other points accordingly
@@ -52,14 +67,11 @@ def normalize_trees_on_max_xyz(random_trees: list, cols: list, col_max_values: l
     Returns -> list of trees in range [0->1]
     """
     for tree in random_trees:
-        for col, col_max in zip(cols, col_max_values):
-            tree.points[col] = tree.points[col].div(col_max)
-    # return random_trees
-
-    #This method is probably more correct, because the preserve x,y relations
-    tree.points["x"] = tree.points["x"].div(max(col_max_values[1:]))
-    tree.points["y"] = tree.points["y"].div(max(col_max_values[1:]))
-    tree.points["z"] = tree.points["z"].div(col_max_values[2])
+        # for col, col_max in zip(cols, col_max_values):
+        # tree.points[col] = tree.points[col].div(col_max)
+        tree.points["x"] = tree.points["x"].div(max(col_max_values[1:]))
+        tree.points["y"] = tree.points["y"].div(max(col_max_values[1:]))
+        tree.points["z"] = tree.points["z"].div(col_max_values[2])
     return random_trees
 
     
@@ -235,7 +247,7 @@ if __name__ == "__main__":
     
     num_samples = 20000
 
-    resolution = 64
+    resolution = 128
     train_val_ratio = 10
 
     test_ims = ["sub1", "sub2", "sub3", "sub4"]
@@ -250,11 +262,11 @@ if __name__ == "__main__":
             f.close()
 
     for i in tqdm(range(num_samples)):
-        if os.path.exists("data/train/images/"+str(i)+".png"):
-            continue
+        # if os.path.exists("data/train/images/"+str(i)+".png"):
+        #     continue
 
-        width_height = randint(3,12)
-        num_trees = randint(4,25)
+        width_height = randint(3,8)
+        num_trees = randint(1,width_height*3)
 
         example, target, labels = get_random_sample(num_trees, tree_glob="train_trees/*.las", image_id=i, resolution=resolution,  width=width_height, height = width_height)
         cv2.imwrite("data/train/images/"+str(i)+".png", example) 
