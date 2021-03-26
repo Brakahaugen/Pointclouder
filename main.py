@@ -245,7 +245,7 @@ def create_manual_label_image(r, ls, size = 10, width = 2, image_id = 0):
 
 if __name__ == "__main__":
     
-    num_samples = 20000
+    num_samples = 100000
 
     resolution = 128
     train_val_ratio = 10
@@ -262,8 +262,8 @@ if __name__ == "__main__":
             f.close()
 
     for i in tqdm(range(num_samples)):
-        # if os.path.exists("data/train/images/"+str(i)+".png"):
-        #     continue
+        if os.path.exists("data/train/images/"+str(i)+".png"):
+            continue
 
         width_height = randint(3,8)
         num_trees = randint(1,width_height*3)
