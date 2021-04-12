@@ -245,7 +245,7 @@ def create_manual_label_image(r, ls, size = 10, width = 2, image_id = 0):
 
 if __name__ == "__main__":
     
-    num_samples = 100000
+    num_samples = 50000
 
     resolution = 128
     train_val_ratio = 10
