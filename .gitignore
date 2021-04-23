@@ -4,3 +4,5 @@ output
 test_trees
 train_trees
 prev_data
+data128
+report_images

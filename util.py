@@ -235,9 +235,11 @@ def Mapping_M(slice: pd.DataFrame, r: int = 256):
     return I#np.floor((I/r) * 256).astype(np.uint8)
 
 
-def normalize(pc: pd.DataFrame):
-    cols = ['x','y','z']
-    pc[cols] = pc[cols].apply(lambda x: (x - x.min()), axis=0).apply(lambda x: (x/x.max()), axis=0)
+def normalize(pc: pd.DataFrame, max_val: float):
+    cols = ['x','y']
+    pc[cols] = pc[cols].apply(lambda x: (x - x.min()), axis=0).apply(lambda x: (x/max_val), axis=0)
+    pc[["z"]] = pc[["z"]].apply(lambda x: (x - x.min()), axis=0).apply(lambda x: (x/x.max()), axis=0)
+
     return pc
 
 if __name__ == '__main__':    

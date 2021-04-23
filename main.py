@@ -69,8 +69,8 @@ def normalize_trees_on_max_xyz(random_trees: list, cols: list, col_max_values: l
     for tree in random_trees:
         # for col, col_max in zip(cols, col_max_values):
         # tree.points[col] = tree.points[col].div(col_max)
-        tree.points["x"] = tree.points["x"].div(max(col_max_values[1:]))
-        tree.points["y"] = tree.points["y"].div(max(col_max_values[1:]))
+        tree.points["x"] = tree.points["x"].div(max(col_max_values[0:2]))
+        tree.points["y"] = tree.points["y"].div(max(col_max_values[0:2]))
         tree.points["z"] = tree.points["z"].div(col_max_values[2])
     return random_trees
 
@@ -153,7 +153,11 @@ def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolutio
     scattered_trees_on_grid = scatter_trees_on_grid(random_trees, [width, height], allow_clustering=allow_clustering, augmentation=augmentation)
 
     ("normalizing")
-    scattered_trees_on_grid.points = normalize(scattered_trees_on_grid.points)
+    max_xy = max([
+        scattered_trees_on_grid.points["x"].max() - scattered_trees_on_grid.points["x"].min(),
+        scattered_trees_on_grid.points["y"].max() - scattered_trees_on_grid.points["y"].min()]
+    )
+    scattered_trees_on_grid.points = normalize(scattered_trees_on_grid.points, max_xy)
 
     ("Creating sequences")
     sequences = TDI(scattered_trees_on_grid.points, 3)
@@ -183,10 +187,14 @@ def create_test_image(resolution=64, dir_id: str = "sub1", image_id=0):
     print("x: ", merged_trees.points["x"].max(), merged_trees.points["x"].min())
     print("y: ", merged_trees.points["y"].max(), merged_trees.points["y"].min())
     print("z: ", merged_trees.points["z"].max(), merged_trees.points["z"].min())
-    
 
-    merged_trees.points = normalize(merged_trees.points)
-    print("normalize")
+    max_xy = max([
+        merged_trees.points["x"].max() - merged_trees.points["x"].min(),
+        merged_trees.points["y"].max() - merged_trees.points["y"].min()]
+    )
+
+    merged_trees.points = normalize(merged_trees.points, max_xy)
+
     print("x: ", merged_trees.points["x"].max(), merged_trees.points["x"].min())
     print("y: ", merged_trees.points["y"].max(), merged_trees.points["y"].min())
     print("z: ", merged_trees.points["z"].max(), merged_trees.points["z"].min())
@@ -247,8 +255,8 @@ if __name__ == "__main__":
     
     num_samples = 50000
 
-    resolution = 128
-    train_val_ratio = 10
+    resolution = 64
+    train_val_ratio = 20
 
     test_ims = ["sub1", "sub2", "sub3", "sub4"]
     for i in range(len(test_ims)):
