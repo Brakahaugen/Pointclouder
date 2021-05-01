@@ -255,7 +255,7 @@ if __name__ == "__main__":
     
     num_samples = 50000
 
-    resolution = 64
+    resolution = 256
     train_val_ratio = 20
 
     test_ims = ["sub1", "sub2", "sub3", "sub4"]
