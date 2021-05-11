@@ -21,15 +21,21 @@ def rotate(px,py, angle):
     return qx, qy
 
 
-def get_n_random_trees(num_trees, tree_glob = "train_trees/*.las"):
+def get_n_random_trees(num_trees, tree_glob = "train_trees/*.las", num_trees_db=0):
     """
     Returns n random trees from the given directory
     the format of the returned trees are loaded pyntcloud objects
     """
     files = glob(tree_glob)
-    shuffle(files)
-    files = files[:num_trees] if len(files) >= num_trees else files
-
+    if num_trees_db == 0:
+        shuffle(files)
+        files = files[:num_trees] if len(files) >= num_trees else files
+    else:
+        file_sample = []
+        for i in range(num_trees):
+            i = i %num_trees_db
+            file_sample.append(files[i])
+        files = file_sample
     trees = []
     for file in files:
         tree = PyntCloud.from_file(file)
@@ -144,9 +150,9 @@ def scatter_trees_on_grid(random_trees: list, width_height: list, allow_clusteri
 
 
 
-def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolution: int = 64, allow_clustering: bool = True, augmentation: dict = {}, tree_glob: str = "train_trees/*.las", image_id = 0):
+def get_random_sample(num_trees = 32, width: int = 8, height: int = 8, resolution: int = 64, allow_clustering: bool = True, augmentation: dict = {}, tree_glob: str = "train_trees/*.las", image_id = 0, num_trees_db = 0):
     ("getting")
-    random_trees = get_n_random_trees(num_trees, tree_glob=tree_glob)
+    random_trees = get_n_random_trees(num_trees, tree_glob=tree_glob, num_trees_db=num_trees_db)
     ("processing")
     random_trees = preprocess_trees(random_trees)
     ("scattering")
@@ -252,11 +258,11 @@ def create_manual_label_image(r, ls, size = 10, width = 2, image_id = 0):
             
 
 if __name__ == "__main__":
-    
-    num_samples = 50000
+    num_samples = 5000
 
-    resolution = 512
+    resolution = 256
     train_val_ratio = 20
+    num_trees_db = 5
 
     test_ims = ["sub1", "sub2", "sub3", "sub4"]
     for i in range(len(test_ims)):
@@ -276,7 +282,7 @@ if __name__ == "__main__":
         width_height = randint(3,8)
         num_trees = randint(1,width_height*3)
 
-        example, target, labels = get_random_sample(num_trees, tree_glob="train_trees/*.las", image_id=i, resolution=resolution,  width=width_height, height = width_height)
+        example, target, labels = get_random_sample(num_trees, tree_glob="train_trees/*.las", image_id=i, resolution=resolution,  width=width_height, height = width_height, num_trees_db=num_trees_db)
         cv2.imwrite("data/train/images/"+str(i)+".png", example) 
         with open("data/train/labels/"+str(i)+".json", "w") as f:
             f.write(json.dumps(labels, indent = 4))
