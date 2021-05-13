@@ -262,7 +262,7 @@ if __name__ == "__main__":
 
     resolution = 256
     train_val_ratio = 20
-    num_trees_db = 20
+    num_trees_db = 50
 
     test_ims = ["sub1", "sub2", "sub3", "sub4"]
     for i in range(len(test_ims)):
